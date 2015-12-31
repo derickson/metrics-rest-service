@@ -85,11 +85,17 @@ app.post('/metric', auth, function(request, response) {
     return;
   }
   
+  if( !body.payload) {
+    response.status(400).send('post field payload required ');
+    eslog.log(client, request, 'Error: post field payload required');
+    return;
+  }
+  
   var n_body = {}
   n_body['@timestamp'] = timestamp;
   n_body['source'] = metric_source;
   n_body['channel'] = metric_channel;
-  n_body[metric_channel] = request.body.payload;
+  n_body[metric_channel] = body.payload;
   
   client.index({
     index: 'metric',
