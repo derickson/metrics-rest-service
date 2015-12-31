@@ -1,0 +1,27 @@
+{
+  "name": "metrics-rest-service",
+  "version": "0.0.1",
+  "description": "a nodjs rest service to sit inbetween IFTTT like recipes and Elasticsearch",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "4.13.3"
+  },
+  "engines": {
+    "node": "0.12.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/derickson/metrics-rest-service"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "express",
+    "ifttt",
+    "elasticsearch"
+  ],
+  "license": "MIT"
+}
