@@ -73,9 +73,9 @@ app.post('/metric', auth, function(request, response) {
   var checkTime = body.checkTime || null;
 
   if( checkTime ) {
-    var m = moment(checkTime + " EST", "MMM DD, YYYY [at] hh:mmA zz");
+    var m = moment(checkTime + " -0500", "MMM DD, YYYY [at] hh:mmA Z");
     if(m.isValid) {
-      timestamp = m.toDate();
+      timestamp = m.format();
     }
   }
   
