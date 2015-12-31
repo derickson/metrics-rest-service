@@ -31,3 +31,27 @@ $ heroku config:set SERVICE_PASSWORD=<password-for-this-rest-serivice>
 $ git push heroku master
 $ heroku open
 ```
+
+## IFTTT rest target
+URL:
+
+```
+https://<username>:<password>@<name of heroku app>.herokuapp.com/metric
+```
+
+Method: POST
+
+Content Type: application/json
+
+Body:
+
+```
+{
+"metric_source": "ifttt",
+"metric_channel": "datatype",
+"checkTime": "{{CheckTime}}",
+"payload": {
+    << FIELDS >>
+  }
+}
+```
