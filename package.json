@@ -7,7 +7,9 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "4.13.3"
+    "express": "4.13.3",
+    "elasticsearch": "10.0.1",
+    "dateformat": "1.0.12"
   },
   "engines": {
     "node": "0.12.7"
