@@ -23,5 +23,7 @@ $ npm start
 
 ```
 $ heroku create
+$ heroku config:set ES_HOST=https://<username>:<password>@<hostname-for-found-instance>.found.io:<port>
 $ git push heroku master
 $ heroku open
+```
