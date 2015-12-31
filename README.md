@@ -2,11 +2,11 @@
 a nodjs rest service to sit inbetween IFTTT like recipes and Elasticsearch
 
 
-# node-js-getting-started
+## This is a fork of node-js-getting-started
 
-A barebones Node.js app using [Express 4](http://expressjs.com/).
+This all started using the node.js tutorial from Heroku: [node-js-getting-started](https://github.com/heroku/node-js-getting-started), which is a barebones Node.js app using [Express 4](http://expressjs.com/).
 
-This application supports the [Getting Started with Node on Heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs) article - check it out.
+A good intro tutorial for how that all works can be found here:  [Getting Started with Node on Heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs) 
 
 ## Running Locally
 
