@@ -9,7 +9,8 @@
   "dependencies": {
     "express": "4.13.3",
     "elasticsearch": "10.0.1",
-    "dateformat": "1.0.12"
+    "dateformat": "1.0.12",
+    "basic-auth": "1.0.3"
   },
   "engines": {
     "node": "0.12.7"

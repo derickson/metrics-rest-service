@@ -26,6 +26,8 @@ $ npm start
 ```
 $ heroku create
 $ heroku config:set ES_HOST=https://<username>:<password>@<hostname-for-found-instance>.found.io:<port>
+$ heroku config:set SERVICE_USERNAME=<userame-for-this-rest-serivice>
+$ heroku config:set SERVICE_PASSWORD=<password-for-this-rest-serivice>
 $ git push heroku master
 $ heroku open
 ```
