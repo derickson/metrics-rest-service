@@ -73,7 +73,7 @@ app.post('/metric', auth, function(request, response) {
   var checkTime = body.checkTime || null;
 
   if( checkTime ) {
-    var m = moment(checkTime + " -0500", "MMM DD, YYYY [at] hh:mmA Z");
+    var m = moment(checkTime + config.ifttt_tz, "MMM DD, YYYY [at] hh:mmA Z");
     if(m.isValid) {
       timestamp = m.format();
     }
