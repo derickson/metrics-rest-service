@@ -6,7 +6,7 @@ var elasticsearch = require('elasticsearch');
 var dateFormat = require('dateformat');
 
 var client = new elasticsearch.Client({
-  host: config.host
+  host: config.es_host
 });
 
 
