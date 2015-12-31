@@ -1,6 +1,8 @@
 # metrics-rest-service
 a nodjs rest service to sit inbetween IFTTT like recipes and Elasticsearch
 
+Status: work in progress, isn't anywhere close to working yet
+
 
 ## This is a fork of node-js-getting-started
 
