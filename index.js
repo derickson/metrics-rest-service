@@ -10,6 +10,7 @@ var bodyParser = require('body-parser');
 // express middleware kinds of things
 var basicAuth = require('basic-auth');
 var moment = require('moment');
+var dateFormat = require('dateformat');
 
 // data back end
 var elasticsearch = require('elasticsearch');
@@ -97,8 +98,11 @@ app.post('/metric', auth, function(request, response) {
   n_body['channel'] = metric_channel;
   n_body[metric_channel] = body.payload;
   
+  var now = new Date();
+  var indexName = 'metric-' +  dateFormat(now,"yyyy.mm");
+  
   client.index({
-    index: 'metric',
+    index: indexName,
     type: metric_channel,
     body: n_body
   });
