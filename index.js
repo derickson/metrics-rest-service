@@ -134,12 +134,20 @@ var metricLogger = function(body, request, response, next) {
   var checkTime = mod_bod.ifttt_checkTime || null;
   if( checkTime ) {
     var m = moment(checkTime + config.ifttt_tz, "MMM DD, YYYY [at] hh:mmA Z");
-    if(m.isValid) {
+    if(m.isValid()) {
       timestamp = m.format();
     }
   }
 
   if( mod_bod.unixtimestamp ) timestamp = mod_bod.unixtimestamp;
+
+  var ifttt_date = mod_bod.ifttt_date || null;
+  if( ifttt_date ){
+    var m = moment( ifttt_date + config.ifttt_tz, "D/M/YYYY Z" );
+    if(m.isValid()) {
+      timestamp = m.format();
+    }
+  }
   
   if( !timestamp ){
     //response.status(400).send('post payload requires a timestamp field such as: checkTime');
