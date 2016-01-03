@@ -51,15 +51,43 @@ var auth = function (req, res, next) {
   };
 };
 
-app.post('/metric', auth, function(request, response) {
-  var body = request.body;
+// do the work of raw logging all payloads wih natural timestamps
+var rawLogger = function(body, request, response, next) {
+  var now = new Date();
 
+  var n_body = {}
+  n_body['@timestamp'] = now;
+  n_body['body'] = body;
+
+  
+
+  var now = new Date();
+  var indexName = 'raw-' +  dateFormat(now,"yyyy.mm");
+  client.index({
+    index: indexName,
+    type: 'raw',
+    body: n_body
+  }, function(error, res){
+    if(!error){
+      eslog.log(client, request, '  raw logging success');
+      next();
+    } else {
+      eslog.log(client, request, '  raw logging error');
+      response.status(500).send('Error');
+      next();
+    }
+  });
+};
+
+// given a body, write out the log assuming we know what to do with it
+var metricLogger = function(body, request, response, next) {
+  
   // required
   var metric_source = body.metric_source || null;
   if( !metric_source ){
     response.status(400).send('post payload requires metric_source field');
     eslog.log(client, request, 'Error: post payload requires metric_source field');
-    return;
+    next();
   }
   
 
@@ -67,11 +95,11 @@ app.post('/metric', auth, function(request, response) {
   if( !metric_channel ){
     response.status(400).send('post payload requires metric_channel field');
     eslog.log(client, request, 'Error: post payload requires metric_channel field');
-    return;
+    next();
   }
 
   var timestamp = null;
-  var checkTime = body.checkTime || null;
+  var checkTime = body.ifttt_checkTime || null;
 
   if( checkTime ) {
     var m = moment(checkTime + config.ifttt_tz, "MMM DD, YYYY [at] hh:mmA Z");
@@ -81,15 +109,18 @@ app.post('/metric', auth, function(request, response) {
   }
   
   if( !timestamp ){
-    response.status(400).send('post payload requires a timestamp field such as: checkTime');
-    eslog.log(client, request, 'Error: post payload requires a timestamp field such as: checkTime');
-    return;
+    //response.status(400).send('post payload requires a timestamp field such as: checkTime');
+    //eslog.log(client, request, 'Error: post payload requires a timestamp field such as: checkTime');
+    // just use now as the timestamp
+    timestamp = new Date();
   }
   
+  // body HAS to have a payload section
+  // TODO : wouldn't it be nice if this could just handle raw feeds with no formatting assumptions
   if( !body.payload) {
     response.status(400).send('post field payload required ');
     eslog.log(client, request, 'Error: post field payload required');
-    return;
+    next();
   }
   
   var n_body = {}
@@ -105,14 +136,50 @@ app.post('/metric', auth, function(request, response) {
     index: indexName,
     type: metric_channel,
     body: n_body
+  }, function(error, res){
+    if(!error){
+      eslog.log(client, request, '  metric logging success: '+ metric_channel + ' ' + metric_source);
+      next();
+    } else {
+      eslog.log(client, request, '  metric logging error');
+      response.status(500).send('Error');
+      next();
+    }
   });
   
-  console.log(request.body);
-  console.log(n_body);
-  
-  response.status(200).send('Done');
-  eslog.log(client, request, 'Metric: Done');
-  
+};
+
+//raw handler
+app.post('/raw', auth, function(request, response) {
+  var now = new Date();
+  eslog.log(client, request, 'raw service');
+
+  var body = request.body;
+
+  rawLogger(body, request, response, function() {
+    if(response.statusCode !== 500 && response.statusCode !== 400) {
+      response.status(200).send('Done');
+    } 
+  });
+
+});
+
+
+
+//metric handler
+app.post('/metric', auth, function(request, response) {
+  var now = new Date();
+  eslog.log(client, request, 'metric service');
+
+  var body = request.body;
+
+  rawLogger(body, request, response, function() {
+      metricLogger(body, request, response, function() {
+        if(response.statusCode !== 500 && response.statusCode !== 400) {
+          response.status(200).send('Done');
+        }
+      });
+    }); 
 });
 
 

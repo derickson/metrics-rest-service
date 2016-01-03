@@ -4,7 +4,7 @@ exports.eslog = {
   'log' : function(client, request, message) {
     
     var now = new Date();
-    console.log(dateFormat(now,'yyyy-mm-dd HH:MM:SS') +": "+ message);
+    console.log(dateFormat(now,'yyyy-mm-dd HH:MM:ss') +": "+ message);
     
     var indexName = 'logstash-' +  dateFormat(now,"yyyy.mm.dd");
     client.index({
