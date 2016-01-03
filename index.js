@@ -20,6 +20,31 @@ var client = new elasticsearch.Client({
 
 /**  ################ The app ########### */
 
+
+//load data handlers (transformers)
+var transformers = [];
+transformers.push( require('./transformers/zapierWeatherTransformer').transformer );
+transformers.push( require('./transformers/identicalTransformer').transformer );
+
+var transform = function( body ){
+  var t_len = transformers.length;
+  var transformer = null;
+  for(var t = 0; t< t_len; ++t){
+    transformer = transformers[t];
+    // console.log(transformer.name);
+    if(transformer.isForMe(body)){
+      // console.log('yes');
+      return transformer.handle(body);
+    }
+    // console.log('no');
+  }
+  console.log("Transformer: should have never gotten here, no valid transformers found.");
+};
+
+
+
+
+
 app.set('port', (process.env.PORT || 5000));
 
 app.use(express.static(__dirname + '/public'));
@@ -85,28 +110,36 @@ var metricLogger = function(body, request, response, next) {
   // required
   var metric_source = body.metric_source || null;
   if( !metric_source ){
-    response.status(400).send('post payload requires metric_source field');
-    eslog.log(client, request, 'Error: post payload requires metric_source field');
-    next();
+    response.status(400).send('post body requires metric_source field');
+    eslog.log(client, request, 'Error: post body requires metric_source field');
+    next(); return;
   }
   
 
   var metric_channel = body.metric_channel || null;
   if( !metric_channel ){
-    response.status(400).send('post payload requires metric_channel field');
-    eslog.log(client, request, 'Error: post payload requires metric_channel field');
-    next();
+    response.status(400).send('post body requires metric_channel field');
+    eslog.log(client, request, 'Error: post body requires metric_channel field');
+    next(); return;
   }
 
-  var timestamp = null;
-  var checkTime = body.ifttt_checkTime || null;
+  // big transform, document may not be modified if any of the specialize transformers pass on it
+  var mod_bod = transform(body);
+  
+  // console.log(mod_bod);
 
+
+  var timestamp = null;
+
+  var checkTime = mod_bod.ifttt_checkTime || null;
   if( checkTime ) {
     var m = moment(checkTime + config.ifttt_tz, "MMM DD, YYYY [at] hh:mmA Z");
     if(m.isValid) {
       timestamp = m.format();
     }
   }
+
+  if( mod_bod.unixtimestamp ) timestamp = mod_bod.unixtimestamp;
   
   if( !timestamp ){
     //response.status(400).send('post payload requires a timestamp field such as: checkTime');
@@ -117,20 +150,20 @@ var metricLogger = function(body, request, response, next) {
   
   // body HAS to have a payload section
   // TODO : wouldn't it be nice if this could just handle raw feeds with no formatting assumptions
-  if( !body.payload) {
+  if( !mod_bod.payload) {
     response.status(400).send('post field payload required ');
     eslog.log(client, request, 'Error: post field payload required');
-    next();
+    next(); return;
   }
   
   var n_body = {}
   n_body['@timestamp'] = timestamp;
   n_body['source'] = metric_source;
   n_body['channel'] = metric_channel;
-  n_body[metric_channel] = body.payload;
+  n_body[metric_channel] = mod_bod.payload;
   
   var now = new Date();
-  var indexName = 'metric-' +  dateFormat(now,"yyyy.mm");
+  var indexName = 'metric-' +  dateFormat(timestamp,"yyyy.mm");
   
   client.index({
     index: indexName,
@@ -174,12 +207,48 @@ app.post('/metric', auth, function(request, response) {
   var body = request.body;
 
   rawLogger(body, request, response, function() {
-      metricLogger(body, request, response, function() {
-        if(response.statusCode !== 500 && response.statusCode !== 400) {
-          response.status(200).send('Done');
-        }
-      });
-    }); 
+    metricLogger(body, request, response, function() {
+      if(response.statusCode !== 500 && response.statusCode !== 400) {
+        response.status(200).send('Done');
+      }
+    });
+  }); 
+});
+
+app.post('/metricOnly', auth, function(request, response) {
+  var now = new Date();
+  eslog.log(client, request, 'metricOnly service');
+
+
+  var body = request.body;
+  console.log(  body )
+
+  
+  metricLogger(body, request, response, function() {
+    if(response.statusCode !== 500 && response.statusCode !== 400) {
+      response.status(200).send('Done');
+    }
+  });
+
+});
+
+app.post('/zapier/weather', auth, function(request,response){
+  var now = new Date()
+  eslog.log(client, request, 'zapier custom service');
+
+  var body = request.body;
+  body['metric_source'] = 'zapier';
+  body['metric_channel'] = 'weather';
+
+
+  rawLogger(body, request, response, function() {
+    metricLogger(body, request, response, function() {
+      if(response.statusCode !== 500 && response.statusCode !== 400) {
+        response.status(200).send('Done');
+      }
+    });
+  }); 
+
 });
 
 
