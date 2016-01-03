@@ -134,7 +134,7 @@ var metricLogger = function(body, request, response, next) {
   
   client.index({
     index: indexName,
-    type: metric_channel,
+    type: "metric",
     body: n_body
   }, function(error, res){
     if(!error){
