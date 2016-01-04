@@ -40,3 +40,46 @@ PUT /_template/metric_temp
         }
     }
 }
+
+PUT /_template/raw_temp
+{
+    "template" : "raw-*",
+    "settings" : {
+        "number_of_shards" : 1,
+        "number_of_replicas": 0
+    },
+    "mappings": {
+        "_default_": {
+            "dynamic_templates": [
+                {
+                    "string_fields": {
+                        "mapping": {
+                            "index": "not_analyzed",
+                            "omit_norms": true,
+                            "type": "string",
+                            "doc_values": true
+                        },
+                        "match_mapping_type": "string",
+                        "match": "*"
+                    }
+                }
+            ]
+        },
+        "metric": {
+            "_all": {
+                "enabled": true
+            },
+            "properties": {
+                "@timestamp": {
+                    "type": "date",
+                    "format": "strict_date_optional_time||epoch_millis"
+                },
+                
+                "location": {
+                    "type": "geo_point"
+                }
+                
+            }
+        }
+    }
+}
