@@ -148,6 +148,14 @@ var metricLogger = function(body, request, response, next) {
       timestamp = m.format();
     }
   }
+
+  var fitbit_date = mod_bod.fitbit_date || null;
+  if( fitbit_date ){
+    var m = moment( fitbit_date + config.ifttt_tz, "MMM DD, YYYY Z" );
+    if(m.isValid()) {
+      timestamp = m.format();
+    }
+  }
   
   if( !timestamp ){
     //response.status(400).send('post payload requires a timestamp field such as: checkTime');
