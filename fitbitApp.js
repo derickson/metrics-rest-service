@@ -5,7 +5,7 @@ var config = {
         "timeout": 10000,
         "creds": {
             "clientID": "227JWB",
-            "clientSecret": "f4629e51af19ee695c1608f0e9cb01d8"
+            "clientSecret": "22d56ed65d8697f741e46783bb533599"
         },
         "uris": {
             "authorizationUri": "https://www.fitbit.com",
