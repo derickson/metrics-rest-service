@@ -4,8 +4,8 @@ var Fitbit  = require( './fitbit-oauth2/Fitbit' );
 var config = {
         "timeout": 10000,
         "creds": {
-            "clientID": "227HX7",
-            "clientSecret": "0ba15563bac7c6695081ce6cbd59ed61"
+            "clientID": "227JWB",
+            "clientSecret": "f4629e51af19ee695c1608f0e9cb01d8"
         },
         "uris": {
             "authorizationUri": "https://www.fitbit.com",
