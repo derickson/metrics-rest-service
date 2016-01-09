@@ -29,7 +29,7 @@ var esTypeName = "tokens";
 
 
 var tfile = 'fb-token.json';
-var persist = {
+var esPersist = {
 	read: function( filename, cb ) {
 		esClient.get({
 			index: esIndexName,
@@ -93,7 +93,7 @@ var _init = function( app, client ) {
 	        if ( err ) return next( err );
 			console.log("fetch token happened now I have  token to persist");
 	        // persist the token
-	        persist.write( tfile, token, function( err ) {
+	        esPersist.write( tfile, token, function( err ) {
 	            if ( err ) return next( err );
 
 	            console.log("persist probably succeeded, redirecting to profile");
@@ -117,7 +117,7 @@ var _init = function( app, client ) {
 	        var profile = JSON.parse( body );
 	        // if token is not null, a refesh has happened and we need to persist the new token
 	        if ( token )
-	            persist.write( tfile, token, function( err ) {
+	            esPersist.write( tfile, token, function( err ) {
 	                if ( err ) return next( err );
 	                    res.send( '<pre>' + JSON.stringify( profile, null, 2 ) + '</pre>' );
 	            });
