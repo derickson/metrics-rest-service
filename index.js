@@ -23,6 +23,7 @@ var client = new elasticsearch.Client({
 
 //load data handlers (transformers)
 var transformers = [];
+transformers.push( require('./transformers/iftttAutomaticTransformer').transformer );
 transformers.push( require('./transformers/zapierWeatherTransformer').transformer );
 transformers.push( require('./transformers/identicalTransformer').transformer );
 
@@ -140,22 +141,26 @@ var metricLogger = function(body, request, response, next) {
   }
 
   if( mod_bod.unixtimestamp ) timestamp = mod_bod.unixtimestamp;
+  if( mod_bod.iso8601_time) timestamp = mod_bod.iso8601_time;
 
-  var ifttt_date = mod_bod.ifttt_date || null;
-  if( ifttt_date ){
-    var m = moment( ifttt_date + config.ifttt_tz, "D/M/YYYY Z" );
-    if(m.isValid()) {
-      timestamp = m.format();
+  if(!timestamp) {
+    var ifttt_date = mod_bod.ifttt_date || null;
+    if( ifttt_date ){
+      var m = moment( ifttt_date + config.ifttt_tz, "D/M/YYYY Z" );
+      if(m.isValid()) {
+        timestamp = m.format();
+      }
+    }
+
+    var fitbit_date = mod_bod.fitbit_date || null;
+    if( fitbit_date ){
+      var m = moment( fitbit_date + config.ifttt_tz, "MMM DD, YYYY Z" );
+      if(m.isValid()) {
+        timestamp = m.format();
+      }
     }
   }
 
-  var fitbit_date = mod_bod.fitbit_date || null;
-  if( fitbit_date ){
-    var m = moment( fitbit_date + config.ifttt_tz, "MMM DD, YYYY Z" );
-    if(m.isValid()) {
-      timestamp = m.format();
-    }
-  }
   
   if( !timestamp ){
     //response.status(400).send('post payload requires a timestamp field such as: checkTime');
@@ -171,11 +176,13 @@ var metricLogger = function(body, request, response, next) {
     eslog.log(client, request, 'Error: post field payload required');
     next(); return;
   }
-  
+
+
   var n_body = {}
   n_body['@timestamp'] = timestamp;
   n_body['source'] = metric_source;
   n_body['channel'] = metric_channel;
+  if(mod_bod['location'] !== null) n_body['location'] = mod_bod['location'];
   n_body[metric_channel] = mod_bod.payload;
   
   var now = new Date();
@@ -267,11 +274,31 @@ app.post('/zapier/weather', auth, function(request,response){
 
 });
 
+app.post('/ifttt/automatic', auth, function(request,response){
 
-app.get('/', auth, function(request, response) {
-  response.status(200).send('Helo world!');
-  eslog.log(client, request, 'Received request for metics-rest-service');
+  var now = new Date()
+  eslog.log(client, request, 'ifttt automatic custom service');
+
+  var body = request.body;
+  body['metric_source'] = 'ifttt';
+  body['metric_channel'] = 'automatic_trip';
+
+
+  rawLogger(body, request, response, function() {
+    metricLogger(body, request, response, function() {
+      if(response.statusCode !== 500 && response.statusCode !== 400) {
+        response.status(200).send('Done');
+      }
+    });
+  });
+
 });
+
+
+// app.get('/', auth, function(request, response) {
+//   response.status(200).send('Helo world!');
+//   eslog.log(client, request, 'Received request for metics-rest-service');
+// });
 
 app.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
