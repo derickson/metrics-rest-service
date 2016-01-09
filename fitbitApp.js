@@ -127,6 +127,39 @@ var _init = function( app, client ) {
 	    });
 	});
 
+
+	esPersist.read( tfile, function(err, token){
+		if(err) {
+			console.log("error retrieving token");
+		} else {
+			fitbit.setToken( token );
+
+			fitbit.request({
+        		uri: "https://api.fitbit.com/1/user/-/profile.json",
+        		method: 'GET',
+    		}, function( err, body, token ) {
+		        if ( err ) {
+		            console.log( err );
+		            process.exit(1);
+		        }
+        		console.log( JSON.stringify( JSON.parse( body ), null, 2 ) );
+
+		        // If the token arg is not null, then a refresh has occured and
+		        // we must persist the new token.
+		        if ( token ) {
+		        	esPersist.write( tfile, token, function( err ) {
+		            if ( err ) console.log( err );
+		                console.log("error writing token");
+		            });
+		        } else {
+		            // do f-ing nothing
+		        }
+    });
+
+
+		}
+	});
+
 };
 
 exports.app = {

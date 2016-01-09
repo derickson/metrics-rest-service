@@ -194,6 +194,7 @@ Fitbit.prototype.request = function( options, cb ) {
 		    remaining: res.headers[ 'fitbit-rate-limit-remaining' ],
 		    reset: res.headers[ 'fitbit-rate-limit-reset' ],
 		};
+    console.log(self.limits);
 		cb( null, body );
 	    });
 	},
