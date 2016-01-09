@@ -86,13 +86,17 @@ var _init = function( app, client ) {
 	// config below.
 	//
 	app.get('/fitbit_auth_callback', function (req, res, next) {
+	    console.log("entering callback");
 	    var code = req.query.code;
+	    console.log("the code was: " + code);
 	    fitbit.fetchToken( code, function( err, token ) {
 	        if ( err ) return next( err );
-
+			console.log("fetch token happened now I have  token to persist");
 	        // persist the token
 	        persist.write( tfile, token, function( err ) {
 	            if ( err ) return next( err );
+
+	            console.log("persist probably succeeded, redirecting to profile");
 	            res.redirect( '/fb-profile' );
 	        });
 	    });
@@ -104,6 +108,7 @@ var _init = function( app, client ) {
 	// and you should persist the new token.
 	//
 	app.get( '/fb-profile', function( req, res, next ) {
+		console.log("entering fb-profile");
 	    fitbit.request({
 	        uri: "https://api.fitbit.com/1/user/-/profile.json",
 	        method: 'GET',
