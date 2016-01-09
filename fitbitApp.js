@@ -14,7 +14,7 @@ var config = {
             "tokenPath": "/oauth2/token"
         },
         "authorization_uri": {
-            "redirect_uri": "https://azathought-metrics.herokuapp.com/fitbit_auth_callback/",
+            "redirect_uri": "https://azathought-metrics.herokuapp.com/fitbit_auth_callback",
             "response_type": "code",
             "scope": "activity nutrition profile settings sleep social weight heartrate",
             "state": "3(#0/!~"
