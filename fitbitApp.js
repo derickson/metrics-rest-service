@@ -5,7 +5,7 @@ var config = {
         "timeout": 10000,
         "creds": {
             "clientID": "227HX7",
-            "clientSecret": "a5b9a3db6338e111d9f1eb6d96bcc89c"
+            "clientSecret": "0ba15563bac7c6695081ce6cbd59ed61"
         },
         "uris": {
             "authorizationUri": "https://www.fitbit.com",
@@ -171,6 +171,8 @@ exports.app = {
 		handledAPICall( "https://api.fitbit.com/1/user/-/profile.json", cb );
 	},
 	steps : function(cb){
-		handledAPICall( "https://api.fitbit.com/1/user/-/activities/steps/date/today/1d.json", cb );
+		handledAPICall( "https://api.fitbit.com/1/user/-/activities/steps/date/today/7d.json", cb );
 	}
 };
+
+//handledAPICall( "https://api.fitbit.com/1/user/-/activities/steps/date/today/7d.json", cb );
