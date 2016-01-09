@@ -305,18 +305,18 @@ app.post('/ifttt/automatic', auth, function(request,response){
 // SET UP THE FITBIT APP
 var fitbitApp = require('./fitbitApp').app;
 fitbitApp.init(app, client);
-app.get('/test', function(request, response){
-  fitbitApp.steps( function(err, profile) {
-    if(err){
-      response.status(500).send('error');
+// app.get('/test', function(request, response){
+//   fitbitApp.steps( function(err, profile) {
+//     if(err){
+//       response.status(500).send('error');
       
-    } else {
-      response.status(200);
-      response.setHeader('Content-Type', 'application/json');
-      response.send(JSON.stringify(profile));
-    }
-  });
-});
+//     } else {
+//       response.status(200);
+//       response.setHeader('Content-Type', 'application/json');
+//       response.send(JSON.stringify(profile));
+//     }
+//   });
+// });
 
 
 // app.get('/', auth, function(request, response) {
