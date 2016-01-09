@@ -1,5 +1,5 @@
 
-var Fitbit  = require( 'fitbit-oauth2' );
+var Fitbit  = require( './fitbit-oauth2/Fitbit' );
 
 var config = {
         "timeout": 10000,
@@ -90,6 +90,7 @@ var _init = function( app, client ) {
 	    var code = req.query.code;
 	    console.log("the code was: " + code);
 	    fitbit.fetchToken( code, function( err, token ) {
+	    	if(err) console.log("there was an error yo");
 	        if ( err ) return next( err );
 			console.log("fetch token happened now I have  token to persist");
 	        // persist the token
