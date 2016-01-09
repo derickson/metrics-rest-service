@@ -21,6 +21,8 @@ var client = new elasticsearch.Client({
 
 
 
+
+
 /**  ################ The app ########### */
 
 
@@ -58,7 +60,6 @@ app.use(bodyParser.json());
 // app.set('view engine', 'ejs');
 
 
-fitbitApp.init(app, client);
 
 
 
