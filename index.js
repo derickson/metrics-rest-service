@@ -18,6 +18,9 @@ var client = new elasticsearch.Client({
   host: config.es_host
 });
 
+var fitbitApp = require('./fitbitApp').app;
+
+
 /**  ################ The app ########### */
 
 
@@ -47,13 +50,16 @@ var transform = function( body ){
 
 
 app.set('port', (process.env.PORT || 5000));
-
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 
 // views is directory for all template files
 // app.set('views', __dirname + '/views');
 // app.set('view engine', 'ejs');
+
+
+fitbitApp.init(app, client);
+
 
 
 // authorization function, add as parameter in any routes you'd like authenticated
