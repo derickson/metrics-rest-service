@@ -1,4 +1,6 @@
 
+var Fitbit  = require( 'fitbit-oauth2' );
+
 var config = {
         "timeout": 10000,
         "creds": {
