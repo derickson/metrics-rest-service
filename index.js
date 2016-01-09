@@ -300,6 +300,19 @@ app.post('/ifttt/automatic', auth, function(request,response){
 
 });
 
+app.get('/test', function(request, response){
+  fitbitApp.steps( function(err, profile) {
+    if(err){
+      response.status(500).send('error');
+      
+    } else {
+      response.status(200);
+      response.setHeader('Content-Type', 'application/json');
+      response.send(JSON.stringify(profile));
+    }
+  });
+});
+
 
 // app.get('/', auth, function(request, response) {
 //   response.status(200).send('Helo world!');

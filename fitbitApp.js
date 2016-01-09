@@ -128,6 +128,10 @@ var _init = function( app, client ) {
 	});
 
 
+};
+
+
+var handledAPICall = function (uri, cb){
 	esPersist.read( tfile, function(err, token){
 		if(err) {
 			console.log("error retrieving token");
@@ -135,14 +139,16 @@ var _init = function( app, client ) {
 			fitbit.setToken( token );
 
 			fitbit.request({
-        		uri: "https://api.fitbit.com/1/user/-/profile.json",
+        		uri: uri,
         		method: 'GET',
     		}, function( err, body, token ) {
 		        if ( err ) {
 		            console.log( err );
-		            process.exit(1);
+		            return cb( err );
 		        }
-        		console.log( JSON.stringify( JSON.parse( body ), null, 2 ) );
+
+		        cb(null, JSON.parse( body ));
+        		//console.log( JSON.stringify( JSON.parse( body ), null, 2 ) );
 
 		        // If the token arg is not null, then a refresh has occured and
 		        // we must persist the new token.
@@ -151,17 +157,20 @@ var _init = function( app, client ) {
 		            if ( err ) console.log( err );
 		                console.log("error writing token");
 		            });
-		        } else {
-		            // do f-ing nothing
 		        }
-    });
-
+    		});
 
 		}
 	});
-
 };
 
+
 exports.app = {
-	init : _init
+	init : _init,
+	profile : function( cb ){
+		handledAPICall( "https://api.fitbit.com/1/user/-/profile.json", cb );
+	},
+	steps : function(cb){
+		handledAPICall( "https://api.fitbit.com/1/user/-/activities/steps/date/today/1d.json", cb );
+	}
 };
