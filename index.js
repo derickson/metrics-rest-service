@@ -18,7 +18,7 @@ var client = new elasticsearch.Client({
   host: config.es_host
 });
 
-var fitbitApp = require('./fitbitApp').app;
+
 
 
 /**  ################ The app ########### */
@@ -300,6 +300,10 @@ app.post('/ifttt/automatic', auth, function(request,response){
 
 });
 
+
+// SET UP THE FITBIT APP
+var fitbitApp = require('./fitbitApp').app;
+fitbitApp.init(app, client);
 app.get('/test', function(request, response){
   fitbitApp.steps( function(err, profile) {
     if(err){

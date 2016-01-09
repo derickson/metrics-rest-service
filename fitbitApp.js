@@ -4,8 +4,8 @@ var Fitbit  = require( './fitbit-oauth2/Fitbit' );
 var config = {
         "timeout": 10000,
         "creds": {
-            "clientID": "227JWB",
-            "clientSecret": "22d56ed65d8697f741e46783bb533599"
+            "clientID": process.env.FITBIT_CLIENTID || "ABC", // will fail locally
+            "clientSecret": process.env.FITBIT_CLIENT_SECRET || "DEF" // will fail locally
         },
         "uris": {
             "authorizationUri": "https://www.fitbit.com",
@@ -14,7 +14,7 @@ var config = {
             "tokenPath": "/oauth2/token"
         },
         "authorization_uri": {
-            "redirect_uri": "https://azathought-metrics.herokuapp.com/fitbit_auth_callback",
+            "redirect_uri": process.env.FITBIT_CALLBACK || "http://localhost:5000/fitbit_auth_callback",
             "response_type": "code",
             "scope": "activity nutrition profile settings sleep social weight heartrate",
             "state": "3(#0/!~"
@@ -86,47 +86,22 @@ var _init = function( app, client ) {
 	// config below.
 	//
 	app.get('/fitbit_auth_callback', function (req, res, next) {
-	    console.log("entering callback");
+	    // console.log("entering callback");
 	    var code = req.query.code;
-	    console.log("the code was: " + code);
+	    // console.log("the code was: " + code);
 	    fitbit.fetchToken( code, function( err, token ) {
-	    	if(err) console.log("there was an error yo");
+	    	// if(err) console.log("there was an error yo");
 	        if ( err ) return next( err );
-			console.log("fetch token happened now I have  token to persist");
+			// console.log("fetch token happened now I have  token to persist");
 	        // persist the token
 	        esPersist.write( tfile, token, function( err ) {
 	            if ( err ) return next( err );
 
-	            console.log("persist probably succeeded, redirecting to profile");
-	            res.redirect( '/fb-profile' );
+	            // console.log("persist probably succeeded, redirecting to profile");
+	            res.redirect( '/fb-success.html' );
 	        });
 	    });
 	});
-
-	// Call an API.  fitbit.request() mimics nodejs request() library, automatically
-	// adding the required oauth2 headers.  The callback is a bit different, called
-	// with ( err, body, token ).  If token is non-null, this means a refresh has happened
-	// and you should persist the new token.
-	//
-	app.get( '/fb-profile', function( req, res, next ) {
-		console.log("entering fb-profile");
-	    fitbit.request({
-	        uri: "https://api.fitbit.com/1/user/-/profile.json",
-	        method: 'GET',
-	    }, function( err, body, token ) {
-	        if ( err ) return next( err );
-	        var profile = JSON.parse( body );
-	        // if token is not null, a refesh has happened and we need to persist the new token
-	        if ( token )
-	            esPersist.write( tfile, token, function( err ) {
-	                if ( err ) return next( err );
-	                    res.send( '<pre>' + JSON.stringify( profile, null, 2 ) + '</pre>' );
-	            });
-	        else
-	            res.send( '<pre>' + JSON.stringify( profile, null, 2 ) + '</pre>' );
-	    });
-	});
-
 
 };
 
@@ -172,6 +147,9 @@ exports.app = {
 	},
 	steps : function(cb){
 		handledAPICall( "https://api.fitbit.com/1/user/-/activities/steps/date/today/7d.json", cb );
+	},
+	intraSteps : function(cb){
+		handledAPICall( "https://api.fitbit.com/1/user/-/activities/steps/date/today/1d/15min.json", cb );
 	}
 };
 
