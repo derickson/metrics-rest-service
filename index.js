@@ -164,17 +164,17 @@ app.get('/test', function(request, response){
   });
 });
 
-setInterval(function(){
+// setInterval(function(){
 
-  fitbitApp.intraDeltaSteps( function(err, resp){
-    if(err){
-      console.log('error in interval fitbit task');
-    } else {
-      console.log("fitbit interval task happened");
-    }
-  });
+//   fitbitApp.intraDeltaSteps( function(err, resp){
+//     if(err){
+//       console.log('error in interval fitbit task');
+//     } else {
+//       console.log("fitbit interval task happened");
+//     }
+//   });
 
-}, 10 * 60 * 1000); 
+// }, 10 * 60 * 1000); 
 
 
 
