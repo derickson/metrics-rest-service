@@ -1,6 +1,11 @@
 
 var Fitbit  = require( './fitbit-oauth2/Fitbit' );
 
+var async = require( 'async' );
+
+var dateFormat = require('dateformat');
+var moment = require('moment');
+
 var config = {
         "timeout": 10000,
         "creds": {
@@ -23,12 +28,14 @@ var config = {
 
 var expressApp = null;
 var esClient = null;
+var metricsService = null;
 
 var esIndexName = "fitbit_token_store";
 var esTypeName = "tokens";
 
 
 var tfile = 'fb-token.json';
+var lastCheck = 'fb-lastCheck.json';
 var esPersist = {
 	read: function( filename, cb ) {
 		esClient.get({
@@ -65,9 +72,10 @@ var esPersist = {
 
 var fitbit = null;
 
-var _init = function( app, client ) {
+var _init = function( app, client, metrics ) {
 	expressApp = app;
 	esClient = client;
+	metricsService = metrics;
 
 
 	// Instantiate a fitbit client.  See example config below.
@@ -102,6 +110,8 @@ var _init = function( app, client ) {
 	        });
 	    });
 	});
+
+
 
 };
 
@@ -139,6 +149,137 @@ var handledAPICall = function (uri, cb){
 	});
 };
 
+var mocMetric = function( day, time, steps, cb){
+	var tsStr = day+"T"+time+"-0500";
+
+	var doc = {
+		'metric_source' : 'fitbit',
+		'metric_channel' : 'fitbit_intraday_steps',
+		'iso8601_time': tsStr,
+		'payload': {
+			'steps': steps
+		}
+	};
+	// console.log(JSON.stringify(doc, null, 2));
+	metricsService.rawLogger(doc, '/metric', function(err){
+		if(err) {
+			console.log( err );
+			return cb(err);
+		}
+		metricsService.metricLogger( doc, function(err){
+			if(err) {
+				console.log( err );
+				return cb(err);
+			}
+			cb(null);
+		});
+	});
+
+	
+};
+
+var mocSaveLastCall= function( dateStr, timeStr, cb ){
+	var lastCallDoc = {
+		'day' : dateStr,
+		'time': timeStr
+	};
+	esPersist.write( lastCheck, lastCallDoc, function( err, lc ){
+		if(err) {
+			console.log('error persisting last call');
+			console.log(err);
+			return cb(err);
+		}
+		// console.log(JSON.stringify(lastCallDoc, null, 2));
+		return cb(null);
+	});
+	
+}
+
+
+
+// This is the complicated one.  This is the polling algorithm
+var handleDeltaCall =  function( cb ) {
+	var ret = null;
+
+	esPersist.read( lastCheck, function( err, lc ){
+		// if there isn't a lastCheck in there yet, put a new years in and try again
+		if(err) {
+			console.log('no lastCheck found');
+			mocSaveLastCall( '2016-01-01', '00:00:00', function(err){
+				if(err){
+					console.log(err);
+					return cb(err);
+				} else
+					return handleDeltaCall( cb );
+			});
+		} else {
+			var now = Date();
+
+			console.log('a last check was found');
+			console.log( '  today is: ' + dateFormat(now,"yyyy-mm-dd") );
+			console.log( '  current time is: ' + dateFormat(now,"HH:MM:ss"));
+			console.log( '  data day is: ' + lc.day );
+			console.log( '  data last time is: ' + lc['time'] );
+			
+			var tsStr = lc.day+"T"+lc['time']+"-0500";
+			var lastTime = new Date(tsStr);
+
+			var n = moment();
+
+			var nextInterest = moment(tsStr).add(1,'m');
+			var endOfNextInterestDay = moment(nextInterest).endOf('day');
+			var twentyMinutesAgo = moment(n).subtract(20, 'm');
+			var endMoment = moment.min( endOfNextInterestDay, twentyMinutesAgo );
+			var startDay = nextInterest.format("YYYY-MM-DD");
+			var startTime = nextInterest.format("HH:mm");
+			var endTime = endMoment.format("HH:mm");
+			var uri = "https://api.fitbit.com/1/user/-/activities/steps/date/"+startDay+"/1d/1min/time/"+startTime+"/"+endTime+".json"
+			console.log(uri);
+
+			handledAPICall( uri , function(err, resp){
+				if(err) return cb(err);
+				
+				if(resp['activities-steps'] && resp['activities-steps'].length > 0){
+					var dateStr = resp['activities-steps'][0]['dateTime'];
+					var dataSet = resp['activities-steps-intraday']['dataset'];
+
+					console.log("Inserting  "+ dataSet.length +" records");
+					async.map(
+						dataSet,
+						function(dp, cb){
+							mocMetric( dateStr, dp['time'], dp['value'], cb);
+						},
+						function(err, results){
+
+							// TODO presumably increment the damn thing
+							// mocSaveLastCall( dateStr, dataSet[ dataSet.length - 1]['time'] );
+							var lastDP =  dataSet[ dataSet.length - 1];
+							var t = moment( dateStr + "T" + lastDP['time'] + "-0500");
+							console.log("lastTimeRead: " + t.format());
+
+							// t.add(1,'m');
+							// console.log("nextTime: " + t.format());
+
+							mocSaveLastCall( t.format('YYYY-MM-DD'), t.format('HH:mm:ss'), function(err){
+								if(err) return cb(err);
+
+								cb(null, lastDP);
+
+							});
+						}
+					);
+
+				}
+			});
+
+		}
+
+
+	});
+
+	
+};
+
 
 exports.app = {
 	init : _init,
@@ -150,7 +291,8 @@ exports.app = {
 	},
 	intraSteps : function(cb){
 		handledAPICall( "https://api.fitbit.com/1/user/-/activities/steps/date/today/1d/15min.json", cb );
-	}
+	},
+	intraDeltaSteps : handleDeltaCall
 };
 
 //handledAPICall( "https://api.fitbit.com/1/user/-/activities/steps/date/today/7d.json", cb );

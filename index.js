@@ -150,9 +150,9 @@ app.post('/ifttt/automatic', auth, function(request,response){
 
 
 var fitbitApp = require('./fitbitApp').app;
-fitbitApp.init(app, client);
+fitbitApp.init(app, client, metrics);
 app.get('/test', function(request, response){
-  fitbitApp.intraSteps( function(err, profile) {
+  fitbitApp.profile( function(err, profile) {
     if(err){
       response.status(500).send('error');
       
@@ -163,6 +163,19 @@ app.get('/test', function(request, response){
     }
   });
 });
+
+setInterval(function(){
+
+  fitbitApp.intraDeltaSteps( function(err, resp){
+    if(err){
+      console.log('error in interval fitbit task');
+    } else {
+      console.log("fitbit interval task happened");
+    }
+  });
+
+}, 10 * 60 * 1000); 
+
 
 
 /**  ################ Start Express Server ########### */

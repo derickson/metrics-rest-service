@@ -109,7 +109,7 @@ var _rawLogger = function(body, path, cb) {
       console.log('  raw logging error');
       cb(error, res);
     } else {
-      console.log('  raw logging success');
+      // console.log('  raw logging success');
       cb(null, res);
     }
   });
@@ -252,7 +252,7 @@ var _metricLogger = function(body, cb) {
     body: n_body
   }, function(error, res){
     if(!error){
-    	console.log('  metric logging success: '+ metric_channel + ' ' + metric_source);
+    	//console.log('  metric logging success: '+ metric_channel + ' ' + metric_source);
     	return cb(null);
     } else {
     	console.log(error);
