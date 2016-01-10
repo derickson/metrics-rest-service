@@ -152,7 +152,7 @@ app.post('/ifttt/automatic', auth, function(request,response){
 var fitbitApp = require('./fitbitApp').app;
 fitbitApp.init(app, client);
 app.get('/test', function(request, response){
-  fitbitApp.steps( function(err, profile) {
+  fitbitApp.intraSteps( function(err, profile) {
     if(err){
       response.status(500).send('error');
       
