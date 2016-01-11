@@ -153,6 +153,8 @@ var handledAPICall = function (uri, cb){
 };
 
 var mocMetric = function( day, time, steps, cb){
+	if(steps === 0) return cb(null);
+
 	var tsStr = day+"T"+time+"-0500";
 
 	var doc = {
