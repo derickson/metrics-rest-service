@@ -68,85 +68,84 @@ function _handleErr(err, response) {
   return;
 };
 
+function _rawOnly(body, path, response) {
+  metrics.rawLogger(body, null, "null", function(err, resp) {
+    _handleErr(err, response);
+  });
+};
+
+function _metricOnly(body, response) {
+  metrics.metricLogger(body, function(err, resp) {
+      _handleErr(err, response);
+  });
+};
+
+function _rawThenMetric(body, path, response) {
+  metrics.rawLogger(body, path, function(err, resp) {
+    if(err) return _handleErr(err, response);
+    metrics.metricLogger(body, function(err, resp) {
+        _handleErr(err, response);
+    });
+  }); 
+};
+
 
 //raw handler
 app.post('/raw', auth, function(request, response) {
-  // eslog.log(client, request, 'raw service');
-
   var body = request.body;
 
-  metrics.rawLogger(body, null, function(err, resp) {
-    _handleErr(err, response);
-  });
-
+  _rawOnly(body,response);
 });
-
 
 
 //metric handler
 app.post('/metric', auth, function(request, response) {
-  // eslog.log(client, request, 'metric service');
-
   var body = request.body;
 
-  metrics.rawLogger(body, '/metric', function(err, resp) {
-    if(err) return _handleErr(err, response);
-
-    metrics.metricLogger(body, function(err, resp) {
-        _handleErr(err, response);
-    });
-    
-  }); 
+  _rawThenMetric(body,'/metric', response);
 });
 
-app.post('/metricOnly', auth, function(request, response) {
-  // eslog.log(client, request, 'metricOnly service');
 
+app.post('/metricOnly', auth, function(request, response) {
   var body = request.body;
 
-  metrics.metricLogger(body, function(err, resp) {
-    _handleErr(err, response);
-  });
+  _metricOnly(body, response)
 
 });
 
 app.post('/zapier/weather', auth, function(request,response){
-  // eslog.log(client, request, 'zapier custom service');
-
   var body = request.body;
   body['metric_source'] = 'zapier';
   body['metric_channel'] = 'weather';
 
-
-  metrics.rawLogger(body, '/zapier/weather', function(err, resp) {
-    if(err) return _handleErr(err, response);
-
-    metrics.metricLogger(body, function(err, resp) {
-        _handleErr(err, response);
-    });
-    
-  }); 
-
+  _rawThenMetric(body,'/zapier/weather', response);
 });
 
-app.post('/ifttt/automatic', auth, function(request,response){
-  //eslog.log(client, request, 'ifttt automatic custom service');
+app.post('/zapier/weatherOnly', auth, function(request,response){
+  var body = request.body;
+  body['metric_source'] = 'zapier';
+  body['metric_channel'] = 'weather';
 
+  _metricOnly(body, response);
+});
+
+
+app.post('/ifttt/automatic', auth, function(request,response){
   var body = request.body;
   body['metric_source'] = 'ifttt';
   body['metric_channel'] = 'automatic_trip';
 
-
-  metrics.rawLogger(body, '/ifttt/automatic', function(err, resp) {
-    if(err) return _handleErr(err, response);
-
-    metrics.metricLogger(body, function(err, resp) {
-        _handleErr(err, response);
-    });
-    
-  }); 
-
+  _rawThenMetric(body,'/ifttt/automatic', response);
 });
+
+app.post('/ifttt/automaticOnly', auth, function(request,response){
+  var body = request.body;
+  body['metric_source'] = 'ifttt';
+  body['metric_channel'] = 'automatic_trip';
+
+  _metricOnly(body, response);
+});
+
 
 
 var fitbitApp = require('./fitbitApp').app;

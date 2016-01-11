@@ -93,13 +93,22 @@ var _rawMapping = function( cb ){
 var _rawLogger = function(body, path, cb) {
   var now = new Date();
 
+  var channel = 'unknown';
+  if(path === "/metric" && body['metric_channel']){
+    channel = body['metric_channel'].toLowerCase();
+  } else if(path) {
+    channel = path.toLowerCase().replace(/[\_\/]/g,"");
+  }
+
+
   var n_body = {}
   n_body['@timestamp'] = now;
   n_body['path'] = path;
+  n_body['channel'] = channel;
   n_body['body'] = JSON.stringify(body);
 
   var now = new Date();
-  var indexName = RAW_INDEX + '-' +  dateFormat(now,"yyyy.mm");
+  var indexName = RAW_INDEX + '-' +  channel + '-' + dateFormat(now,"yyyy.mm");
   _esClient.index({
     index: indexName,
     type: RAW_TYPE,
