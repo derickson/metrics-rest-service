@@ -162,7 +162,7 @@ app.get('/test', function(request, response){
     }
   });
 });
-app.get('/testFitbit', functon(request, response){
+app.get('/testFitbit', function(request, response){
   fitbitApp.intraDeltaSteps( function(err, resp) {
     if(err){
       console.log(err);
