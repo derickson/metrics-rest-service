@@ -1,3 +1,5 @@
+require('newrelic');
+
 // configs and libs
 var config = require('./config').config;
 //var eslog = require('./eslog').eslog;
