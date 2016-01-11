@@ -163,17 +163,17 @@ app.get('/test', function(request, response){
   });
 });
 
-// setInterval(function(){
+setInterval(function(){
+  console.log("Starting fitbit near real-time pull");
+  fitbitApp.intraDeltaSteps( function(err, resp){
+    if(err){
+      console.log('error in interval fitbit task');
+    } else {
+      console.log("fitbit interval task happened");
+    }
+  });
 
-//   fitbitApp.intraDeltaSteps( function(err, resp){
-//     if(err){
-//       console.log('error in interval fitbit task');
-//     } else {
-//       console.log("fitbit interval task happened");
-//     }
-//   });
-
-// }, 10 * 60 * 1000); 
+}, 5 * 60 * 1000); 
 
 
 

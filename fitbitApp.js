@@ -7,6 +7,7 @@ var dateFormat = require('dateformat');
 var moment = require('moment');
 
 var config = {
+        "startingFitBitBackDate": '2016-01-01',
         "timeout": 10000,
         "creds": {
             "clientID": process.env.FITBIT_CLIENTID || "ABC", // will fail locally
@@ -202,10 +203,10 @@ var handleDeltaCall =  function( cb ) {
 	var ret = null;
 
 	esPersist.read( lastCheck, function( err, lc ){
-		// if there isn't a lastCheck in there yet, put a new years in and try again
+		// if there isn't a lastCheck in there yet, put in the config default and try again
 		if(err) {
 			console.log('no lastCheck found');
-			mocSaveLastCall( '2016-01-01', '00:00:00', function(err){
+			mocSaveLastCall( config.startingFitBitBackDate, '00:00:00', function(err){
 				if(err){
 					console.log(err);
 					return cb(err);
@@ -244,30 +245,35 @@ var handleDeltaCall =  function( cb ) {
 					var dataSet = resp['activities-steps-intraday']['dataset'];
 
 					console.log("Inserting  "+ dataSet.length +" records");
-					async.map(
-						dataSet,
-						function(dp, cb){
-							mocMetric( dateStr, dp['time'], dp['value'], cb);
-						},
-						function(err, results){
 
-							// TODO presumably increment the damn thing
-							// mocSaveLastCall( dateStr, dataSet[ dataSet.length - 1]['time'] );
-							var lastDP =  dataSet[ dataSet.length - 1];
-							var t = moment( dateStr + "T" + lastDP['time'] + "-0500");
-							console.log("lastTimeRead: " + t.format());
+					// queue with restricted concurrency
+					var q = async.queue(function(task, callback){
+						//do things
+						mocMetric( dateStr, task['time'], task['value'], callback);
+					}, 2);
 
-							// t.add(1,'m');
-							// console.log("nextTime: " + t.format());
+					// what happens when the queue is done
+					q.drain = function(){
+						console.log("all callbacks have occurred??")
+						
+						var lastDP =  dataSet[ dataSet.length - 1];
+						var t = moment( dateStr + "T" + lastDP['time'] + "-0500");
+						console.log("lastTimeRead: " + t.format());
 
-							mocSaveLastCall( t.format('YYYY-MM-DD'), t.format('HH:mm:ss'), function(err){
-								if(err) return cb(err);
+						mocSaveLastCall( t.format('YYYY-MM-DD'), t.format('HH:mm:ss'), function(err){
+							if(err) return cb(err);
 
-								cb(null, lastDP);
+							cb(null, lastDP);
 
-							});
+						});
+					};
+
+					q.push( dataSet, function(err){
+						if(err) {
+							console.log("Error on one of the queued items");
+							console.log(err);
 						}
-					);
+					});
 
 				}
 			});
