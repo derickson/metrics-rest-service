@@ -4,9 +4,11 @@ var Fitbit  = require( './fitbit-oauth2/Fitbit' );
 var async = require( 'async' );
 
 var dateFormat = require('dateformat');
-var moment = require('moment');
+var moment = require('moment-timezone');
+// var moment = require('moment');
 
 var config = {
+		"tz": "America/New_York",
         "startingFitBitBackDate": '2016-01-01',
         "timeout": 10000,
         "creds": {
@@ -214,26 +216,28 @@ var handleDeltaCall =  function( cb ) {
 					return handleDeltaCall( cb );
 			});
 		} else {
-			var now = Date();
+			var now = moment().tz(config.tz);
 
 			console.log('a last check was found');
-			console.log( '  today is: ' + dateFormat(now,"yyyy-mm-dd") );
-			console.log( '  current time is: ' + dateFormat(now,"HH:MM:ss"));
+			console.log( '  today is: ' +  now.tz(config.tz).format("YYYY-MM-DD") );
+			console.log( '  current time is: ' +  now.tz(config.tz).format("HH:mm"));
 			console.log( '  data day is: ' + lc.day );
 			console.log( '  data last time is: ' + lc['time'] );
 			
 			var tsStr = lc.day+"T"+lc['time']+"-0500";
-			var lastTime = new Date(tsStr);
 
-			var n = moment();
+			var n = moment().tz(config.tz);
 
 			var nextInterest = moment(tsStr).add(1,'m');
+			console.log( "nextInterest: " + nextInterest.tz(config.tz).format() );
 			var endOfNextInterestDay = moment(nextInterest).endOf('day');
+			console.log( "endOfNextInterestDay: " + endOfNextInterestDay.tz(config.tz).format() );
+
 			var twentyMinutesAgo = moment(n).subtract(20, 'm');
 			var endMoment = moment.min( endOfNextInterestDay, twentyMinutesAgo );
-			var startDay = nextInterest.format("YYYY-MM-DD");
-			var startTime = nextInterest.format("HH:mm");
-			var endTime = endMoment.format("HH:mm");
+			var startDay = nextInterest.tz(config.tz).format("YYYY-MM-DD");
+			var startTime = nextInterest.tz(config.tz).format("HH:mm");
+			var endTime = endMoment.tz(config.tz).format("HH:mm");
 			var uri = "https://api.fitbit.com/1/user/-/activities/steps/date/"+startDay+"/1d/1min/time/"+startTime+"/"+endTime+".json"
 			console.log(uri);
 
@@ -258,9 +262,9 @@ var handleDeltaCall =  function( cb ) {
 						
 						var lastDP =  dataSet[ dataSet.length - 1];
 						var t = moment( dateStr + "T" + lastDP['time'] + "-0500");
-						console.log("lastTimeRead: " + t.format());
+						console.log("lastTimeRead: " + t.tz(config.tz).format());
 
-						mocSaveLastCall( t.format('YYYY-MM-DD'), t.format('HH:mm:ss'), function(err){
+						mocSaveLastCall( t.tz(config.tz).format('YYYY-MM-DD'), t.tz(config.tz).format('HH:mm:ss'), function(err){
 							if(err) return cb(err);
 
 							cb(null, lastDP);

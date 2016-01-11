@@ -8,15 +8,14 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "async": "^1.4.2",
     "basic-auth": "1.0.3",
     "body-parser": "1.14.2",
     "dateformat": "1.0.12",
     "elasticsearch": "10.0.1",
     "express": "4.13.3",
-    
     "moment": "2.10.6",
-
-    "async": "^1.4.2",
+    "moment-timezone": "^0.5.0",
     "request": "^2.61.0",
     "simple-oauth2": "^0.2.1"
   },
