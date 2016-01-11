@@ -1,4 +1,4 @@
-require('newrelic');
+// require('newrelic');
 
 // configs and libs
 var config = require('./config').config;
