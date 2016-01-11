@@ -162,18 +162,31 @@ app.get('/test', function(request, response){
     }
   });
 });
-
-setInterval(function(){
-  console.log("Starting fitbit near real-time pull");
-  fitbitApp.intraDeltaSteps( function(err, resp){
+app.get('/testFitbit', functon(request, response){
+  fitbitApp.intraDeltaSteps( function(err, resp) {
     if(err){
-      console.log('error in interval fitbit task');
+      console.log(err);
+      response.status(500).send('error');
+      
     } else {
-      console.log("fitbit interval task happened");
+      response.status(200);
+      response.setHeader('Content-Type', 'application/json');
+      response.send(JSON.stringify(resp));
     }
   });
+});
 
-}, 5 * 60 * 1000); 
+// setInterval(function(){
+//   console.log("Starting fitbit near real-time pull");
+//   fitbitApp.intraDeltaSteps( function(err, resp){
+//     if(err){
+//       console.log('error in interval fitbit task');
+//     } else {
+//       console.log("fitbit interval task happened");
+//     }
+//   });
+
+// }, 5 * 60 * 1000); 
 
 
 
