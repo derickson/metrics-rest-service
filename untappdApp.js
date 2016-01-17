@@ -1,17 +1,9 @@
+var config = require('./config').config.untappd;
+
 var request = require( 'request' );
 var moment  = require( 'moment' );
 
 var async = require( 'async' );
-
-
-var config = {
-        "sleep": 10000,
-        "userName": process.env.UNTAPPD_USERNAME || 'xxx',
-        "creds": {
-            "clientID": process.env.UNTAPPD_CLIENTID || "xxx", // will fail locally
-            "clientSecret": process.env.UNTAPPD_CLIENT_SECRET || "xxx" // will fail locally
-        }
-    };
 
 var expressApp = null;
 var esClient = null;
