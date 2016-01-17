@@ -12,4 +12,5 @@ exports.config = {
             "clientID": process.env.UNTAPPD_CLIENTID || "xxx", // will fail locally
             "clientSecret": process.env.UNTAPPD_CLIENT_SECRET || "xxx" // will fail locally
         }
+      }
 }
