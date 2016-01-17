@@ -199,9 +199,24 @@ var untappdApp = require('./untappdApp').app;
 untappdApp.init(app, client, metrics);
 
 app.get('/untappd/repopulate', function(request,response){
-  untappdApp.test();
+  untappdApp.repopulate();
   response.status(200).send('you got it, working in the background to populate untapped');
 });
+app.get('/untappd/checkForMore', function(request, response) {
+  untappdApp.checkForMore(function(retVal){
+    response.status(200);
+    response.setHeader('Content-Type', 'application/json');
+    response.send(JSON.stringify(retVal));
+  });
+  
+});
+
+setInterval(function(){
+  console.log("Starting untappd near real-time pull");
+  untappdApp.checkForMore(function(retVal){
+    console.log("Done Checking for More, found # beers: "+retVal.length);
+  });
+}, 2 * 60 * 1000); 
 
 
 /**  ################ Start Express Server ########### */
